@@ -3,9 +3,18 @@ echo "Updating system..."
 apt-get update
 apt-get install -y nginx php8.3-fpm php8.3-mysql php8.3-curl php8.3-xml php8.3-mbstring php8.3-zip php8.3-intl php8.3-cli mysql-server
 
+
 echo "Preseeding debconf for phpMyAdmin..."
-echo 'phpmyadmin phpmyadmin/reconfigure-webserver multiselect none' | debconf-set-selections
+# Avoid the dbconfig-common
 echo 'phpmyadmin phpmyadmin/dbconfig-install boolean false' | debconf-set-selections
+# Avoid reconfiguring the webserver with phpMyAdmin
+echo 'phpmyadmin phpmyadmin/reconfigure-webserver multiselect none' | debconf-set-selections
+
+
+
+
+
+
 
 echo "Installing phpMyAdmin..."
 apt-get install -y phpmyadmin
