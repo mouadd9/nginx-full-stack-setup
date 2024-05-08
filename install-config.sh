@@ -1,37 +1,42 @@
 #!/bin/bash
-echo "Updating system..."
+echo "nginx....." 
 apt-get update
-apt-get install -y nginx php8.3-fpm php8.3-mysql php8.3-curl php8.3-xml php8.3-mbstring php8.3-zip php8.3-intl php8.3-cli mysql-server
+apt-get install -y nginx
 
+echo "php....." 
+apt-get install -y \
+		php8.3-fpm \
+		php8.3-mysql \
+		php8.3-curl \
+		php8.3-xml \
+		php8.3-mbstring \
+		php8.3-zip \
+		php8.3-intl \
+		php8.3-cli 
 
-echo "Preseeding debconf for phpMyAdmin..."
-# Avoid the dbconfig-common
-echo 'phpmyadmin phpmyadmin/dbconfig-install boolean false' | debconf-set-selections
-# Avoid reconfiguring the webserver with phpMyAdmin
-echo 'phpmyadmin phpmyadmin/reconfigure-webserver multiselect none' | debconf-set-selections
+echo "mysql-server....." 
+apt-get install -y mysql-server
 
-
-
-
-
-
-
-echo "Installing phpMyAdmin..."
+echo "phpmyadmin....."
 apt-get install -y phpmyadmin
 
-echo "Services are being started..."
+echo "Enabling services..."
 service nginx start
 service mysql start
 service php8.3-fpm start
 
-echo "Configuring Nginx for PHP applications..."
+echo "------------------------------------Installation complete. Services have been enabled."
+
+echo "Configuring Nginx to serve PHP applications..."
+
 cp /app/nginx.conf /etc/nginx/sites-available/default
 rm -f /etc/nginx/sites-enabled/default
 ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 nginx -t
 service nginx restart
 
-echo "Configuring MySQL..."
+echo "Updating MySQL Privileges..."
+
 SQL_COMMANDS="
 CREATE USER IF NOT EXISTS 'phpmyadmin'@'localhost' IDENTIFIED BY 'password';
 ALTER USER 'phpmyadmin'@'localhost' IDENTIFIED BY 'password';
@@ -40,9 +45,10 @@ FLUSH PRIVILEGES;
 CREATE DATABASE db;
 exit
 "
-echo "$SQL_COMMANDS" | mysql -u root -p
+
+echo "$SQL_COMMANDS" | mysql
 
 sudo sed -i "s/localhost/127.0.0.1/g" /etc/phpmyadmin/config-db.php
 nano /etc/phpmyadmin/config-db.php
 
-echo "Configuration complete!"
+echo "---------------------------------configuration complete"
