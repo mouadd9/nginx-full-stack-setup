@@ -17,6 +17,10 @@ apt-get install -y \
 echo "mysql-server....." 
 apt-get install -y mysql-server
 
+echo "Preseeding debconf to skip phpMyAdmin dbconfig-common..."
+echo 'phpmyadmin phpmyadmin/reconfigure-webserver multiselect' | debconf-set-selections
+echo 'phpmyadmin phpmyadmin/dbconfig-install boolean false' | debconf-set-selections
+
 echo "phpmyadmin....."
 apt-get install -y phpmyadmin
 
