@@ -1,9 +1,17 @@
 #!/bin/bash
-echo "nginx....." 
+
+
 apt-get update
+
+echo "----------------------------------------------on install le serveurweb (nginx) et une SGBDR Mysql et les dependences php et phpmyadmin"
+
+
+
+echo "1- installation nginx"
 apt-get install -y nginx
 
-echo "php....." 
+
+echo "installation des dependences php" 
 apt-get install -y \
         php8.3-fpm \
         php8.3-mysql \
@@ -14,11 +22,10 @@ apt-get install -y \
         php8.3-intl \
         php8.3-cli 
 
-# Installing additional PHP extensions
-apt-get install -y php-mbstring php-zip php-gd php-json php-curl
 
-echo "mysql-server....." 
+echo "2-installation du Mysql-server"
 apt-get install -y mysql-server
+
 
 echo "phpmyadmin....."
 echo "phpmyadmin phpmyadmin/dbconfig-install boolean true" | debconf-set-selections
@@ -26,62 +33,43 @@ echo "phpmyadmin phpmyadmin/mysql/admin-pass password password" | debconf-set-se
 echo "phpmyadmin phpmyadmin/mysql/app-pass password password" | debconf-set-selections
 echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect none" | debconf-set-selections
 
+# on selectionne none car on travail avec nginx 
+
 export DEBIAN_FRONTEND=noninteractive
+
+echo "installation phpmyadmin"
 apt-get install -y phpmyadmin
 
-echo "Enabling services..."
+
+echo "activation des services..."
 service nginx restart
 service mysql restart
 service php8.3-fpm restart
 
-# Enabling PHP extensions
+# activation des extensions PHP
 phpenmod mbstring
 phpenmod curl
 phpenmod gd
 phpenmod json
 phpenmod zip
 
-# Restart PHP-FPM to apply changes
 service php8.3-fpm restart
 
-echo "------------------------------------Installation complete. Services have been enabled."
+echo "-------------------------------------------Installation complete. Services have been enabled."
 
-echo "Configuring Nginx to serve PHP applications..."
+echo "Configuration Nginx pour servir les pages PHP"
 
+# we replace the content of default with new configuration
 cp /app/nginx.conf /etc/nginx/sites-available/default
+
+# we delete the symbolic link  and files in sites-enabled of default
 rm -f /etc/nginx/sites-enabled/default
+
+# we create a symbolic from sites-available to sites-enabled
 ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+
 nginx -t
+# en test et redemare le service
 service nginx restart
 
-echo "Updating MySQL Privileges and Verifying User..."
-
-# Extract debian-sys-maint user info from debian.cnf
-DEBIAN_MAINT_PASSWORD=$(grep 'password' /etc/mysql/debian.cnf | head -1 | awk -F' = ' '{print $2}')
-DEBIAN_MAINT_USER=$(grep 'user' /etc/mysql/debian.cnf | head -1 | awk -F' = ' '{print $2}')
-
-# Configure debian-sys-maint user in MySQL
-mysql -u root -e "
-CREATE USER IF NOT EXISTS '${DEBIAN_MAINT_USER}'@'localhost' IDENTIFIED BY '${DEBIAN_MAINT_PASSWORD}';
-GRANT ALL PRIVILEGES ON . TO '${DEBIAN_MAINT_USER}'@'localhost' WITH GRANT OPTION;
-FLUSH PRIVILEGES;
-"
-
-mysql -u root "
-SET PASSWORD FOR 'root'@'localhost' = PASSWORD('passroot');
-FLUSH PRIVILEGES;
-"
-
-# Configure new MySQL user and grant privileges
-mysql -u root -p -e "
-CREATE DATABASE IF NOT EXISTS websiteDB;
-CREATE USER IF NOT EXISTS user2@localhost IDENTIFIED BY 'pass';
-GRANT ALL PRIVILEGES ON websiteDB.* TO user2@localhost;
-FLUSH PRIVILEGES;
-"
-
-echo "Now manually configure phpMyAdmin settings by editing config-db.php"
-
-sudo nano /etc/phpmyadmin/config-db.php
-
-echo "---------------------------------configuration complete"
+echo "-------------------------------------------configuration complete"
