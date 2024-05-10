@@ -73,11 +73,11 @@ FLUSH PRIVILEGES;
 "
 
 # Configure new MySQL user and grant privileges
-mysql -u root -p passroot -e "
-CREATE USER IF NOT EXISTS 'user'@'localhost' IDENTIFIED BY 'pass';
-GRANT ALL PRIVILEGES ON . TO 'user'@'localhost' WITH GRANT OPTION;
+mysql -u root -p -e "
+CREATE DATABASE IF NOT EXISTS websiteDB;
+CREATE USER IF NOT EXISTS user2@localhost IDENTIFIED BY 'pass';
+GRANT ALL PRIVILEGES ON websiteDB.* TO user2@localhost;
 FLUSH PRIVILEGES;
-CREATE DATABASE IF NOT EXISTS db;
 "
 
 echo "Now manually configure phpMyAdmin settings by editing config-db.php"
