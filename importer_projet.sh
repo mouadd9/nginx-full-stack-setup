@@ -13,6 +13,6 @@ URL=$1
 rm -r /var/www/html*
 
 # Clone the repository from the provided URL into /var/www/html
-git clone $URL /var/www/html
+git clone $URL /var/www/html/proj
 
 
