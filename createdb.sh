@@ -4,6 +4,7 @@ DIRECTORY="/var/www/html/proj"
 
 MYSQL_USER="phpmyadmin"
 MYSQL_PASSWORD="password"
+MYSQL_HOST="127.0.0.1"
 DB_NAME="gestion_platforme_scolaire"  
 
 cd "$DIRECTORY"
@@ -16,7 +17,7 @@ else
     echo "Found SQL file: $SQL_FILE"
 fi
 
-mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "
+mysql -h"$MYSQL_HOST" -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "
 CREATE DATABASE IF NOT EXISTS $DB_NAME;
  USE $DB_NAME;
  source $SQL_FILE;
